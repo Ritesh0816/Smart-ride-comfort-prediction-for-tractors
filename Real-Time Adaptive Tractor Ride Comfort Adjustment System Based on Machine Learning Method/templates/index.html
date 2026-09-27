@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Tractor Ride Comfort Prediction</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+
+body{
+background-image:url("/static/tractor_bg.jpg");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+}
+
+.container-box{
+background:rgba(255,255,255,0.92);
+padding:30px;
+border-radius:15px;
+margin-top:40px;
+}
+
+.title{
+text-align:center;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.result-box{
+background:#f1f1f1;
+padding:20px;
+border-radius:10px;
+margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="container-box">
+
+<h2 class="title">🚜 Tractor Ride Comfort Prediction System</h2>
+
+<form method="POST">
+
+<div class="row">
+
+<div class="col-md-6">
+<label>Suspension</label>
+<select name="suspension" class="form-control">
+<option>soft</option>
+<option>medium</option>
+<option>hard</option>
+</select>
+</div>
+
+<div class="col-md-6">
+<label>Speed (m/s)</label>
+<input type="number" step="0.01" name="speed" class="form-control" required>
+</div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+<div class="col-md-6">
+<label>Tire Pressure</label>
+<input type="number" step="0.1" name="tire_pressure" class="form-control">
+</div>
+
+<div class="col-md-6">
+<label>Wheelbase</label>
+<input type="number" step="0.01" name="wheelbase" class="form-control">
+</div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+<div class="col-md-6">
+<label>Soil Type</label>
+<select name="soil" class="form-control">
+<option>clay</option>
+<option>loam</option>
+<option>sand</option>
+<option>silt</option>
+</select>
+</div>
+
+<div class="col-md-6">
+<label>Soil Moisture</label>
+<input type="number" step="0.1" name="moisture" class="form-control">
+</div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+<div class="col-md-6">
+<label>Tractive Force</label>
+<input type="number" step="0.1" name="traction" class="form-control">
+</div>
+
+<div class="col-md-6">
+<label>Tool Depth</label>
+<input type="number" step="0.01" name="depth" class="form-control">
+</div>
+
+</div>
+
+<br>
+
+<center>
+<button class="btn btn-success btn-lg">Predict Vibration</button>
+</center>
+
+</form>
+
+{% if result %}
+
+<div class="result-box">
+
+<h4>Prediction Results</h4>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Location</th>
+<th>Vibration</th>
+<th>Comfort Level</th>
+</tr>
+
+<tr>
+<td>Seat</td>
+<td>{{result.seat}}</td>
+<td>{{result.seat_level}}</td>
+</tr>
+
+<tr>
+<td>Backrest</td>
+<td>{{result.backrest}}</td>
+<td>{{result.backrest_level}}</td>
+</tr>
+
+<tr>
+<td>Floor</td>
+<td>{{result.floor}}</td>
+<td>{{result.floor_level}}</td>
+</tr>
+
+</table>
+
+</div>
+
+<div class="result-box">
+
+<h4>Vibration Comparison</h4>
+
+<canvas id="barChart"></canvas>
+
+</div>
+
+<div class="result-box">
+
+<h4>Speed vs Seat Vibration</h4>
+
+<div id="speedChart"></div>
+
+</div>
+
+<div class="result-box">
+
+<h4>3D Vibration Surface</h4>
+
+<div id="surfacePlot"></div>
+
+</div>
+
+<div class="result-box">
+
+<h4>AI Recommendation</h4>
+
+<p>Recommended Speed: <b>{{recommendation.speed}} m/s</b></p>
+
+<p>Recommended Tool Depth: <b>{{recommendation.depth}} m</b></p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+{% if result %}
+
+<script>
+
+new Chart(document.getElementById("barChart"),{
+type:"bar",
+data:{
+labels:["Seat","Backrest","Floor"],
+datasets:[{
+data:[
+{{result.seat}},
+{{result.backrest}},
+{{result.floor}}
+],
+backgroundColor:["green","orange","red"]
+}]
+}
+});
+
+</script>
+
+
+<script>
+
+var trace={
+x: {{speed_curve.speed|tojson}},
+y: {{speed_curve.vibration|tojson}},
+type:"scatter"
+};
+
+Plotly.newPlot("speedChart",[trace]);
+
+</script>
+
+
+<script>
+
+var data=[{
+z: {{surface_data.z|tojson}},
+x: {{surface_data.depth|tojson}},
+y: {{surface_data.speed|tojson}},
+type:"surface"
+}];
+
+Plotly.newPlot("surfacePlot",data);
+
+</script>
+
+{% endif %}
+
+</body>
+</html>
